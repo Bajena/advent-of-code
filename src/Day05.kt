@@ -1,6 +1,6 @@
 import java.lang.Math.abs
 
-// https://adventofcode.com/2021/day/4
+// https://adventofcode.com/2021/day/5
 
 fun main() {
   fun part1() {
