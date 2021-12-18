@@ -6,7 +6,51 @@ fun main() {
     val rows = rows
     val numbers = numbers
 
-    fun computeLowPoints() {
+    fun computeBasins() {
+      val lowPointIndices = computeLowPoints()
+      val basinSizes = mutableListOf<Int>()
+      val basins = mutableListOf<List<Pair<Int, Int>>>()
+      val basinIndices = mutableListOf<Int>()
+
+      lowPointIndices.forEach {
+        val basin = computeBasin(it)
+
+        basinSizes.add(basin.size)
+        basins.add(basin.map { indexToPoint(it) })
+        basinIndices.addAll(basin)
+      }
+
+      numbers.forEachIndexed { index, v ->
+        if (index % cols == 0) {
+          println("")
+          print("${index / rows }: ")
+        }
+
+        if (lowPointIndices.contains(index)) {
+          print(" ^$v^ ")
+        } else if (basinIndices.contains(index)) {
+          print(" *$v* ")
+        } else print("  $v  ")
+      }
+
+      println()
+      println("Result: ${basinSizes.sortedDescending().take(3).fold(1) { acc, i -> acc * i }}")
+    }
+
+    fun computeBasin(index : Int, currentBasin : List<Int> = listOf()) : List<Int> {
+      var newBasin = currentBasin.toMutableList()
+      newBasin.add(index)
+
+      getNeighbours(index).filter { it.second < 9 }.forEach {
+        if (!newBasin.contains(it.first)) {
+          newBasin = computeBasin(it.first, newBasin).toMutableList()
+        }
+      }
+
+      return newBasin
+    }
+
+    fun computeLowPoints() : List<Int> {
       var result = 0
       val lowPointIndices = mutableListOf<Int>()
       val surelyNotLowPointIndices = mutableMapOf<Int, Boolean>()
@@ -33,7 +77,7 @@ fun main() {
         }
       }
 
-      println("Result:$result, lowPointIndices:$lowPointIndices")
+      return lowPointIndices
     }
 
     // Returns list of pairs of <Index, Value>
@@ -43,11 +87,13 @@ fun main() {
       val y = point.second
 
       return listOf(
-        Pair(pointToIndex(x - 1, y), get(x - 1, y)),
-        Pair(pointToIndex(x + 1, y), get(x + 1, y)),
-        Pair(pointToIndex(x, y - 1), get(x, y - 1)),
-        Pair(pointToIndex(x, y + 1), get(x, y + 1)),
-      ).filter { it.second != null } as List<Pair<Int, Int>>
+        Pair(x - 1, y),
+        Pair(x + 1, y),
+        Pair(x, y - 1),
+        Pair(x, y + 1)
+      ).filter { it.first >= 0 && it.first < cols && it.second >= 0 && it.second < rows }.map {
+        Pair(pointToIndex(it.first, it.second), get(it.first, it.second)!!)
+      }
     }
 
     fun pointToIndex(x : Int, y : Int) : Int {
@@ -92,7 +138,7 @@ fun main() {
 
     val t = Table(cols, rows, numbers.toTypedArray())
 
-    t.computeLowPoints()
+    t.computeBasins()
   }
 
   part1()
