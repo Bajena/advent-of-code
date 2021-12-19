@@ -132,6 +132,26 @@ fun main() {
   }
 
   fun part2() {
+    val numbers = mutableListOf<Int>()
+    var cols = -1
+    var rows = 0
+
+    for (line in readInput("Day11")) {
+      cols = line.length
+      rows++
+      numbers.addAll(line.split("").filter { it.isNotEmpty() }.map { it.toInt() })
+    }
+
+    val t = Table(cols, rows, numbers.toTypedArray())
+
+    var stepCount = 0
+    var step = 0
+    while (step < numbers.size) {
+      stepCount++
+      step = t.step()
+    }
+
+    println("Step count:$stepCount")
   }
 
   part1()
