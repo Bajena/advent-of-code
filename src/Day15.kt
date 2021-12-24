@@ -1,6 +1,6 @@
 import java.util.*
 
-// https://adventofcode.com/2021/day/14
+// https://adventofcode.com/2021/day/15
 
 fun main() {
   fun <T> List<Pair<T, T>>.getUniqueValuesFromPairs(): Set<T> = this
@@ -29,43 +29,41 @@ fun main() {
     )
   }
 
-  fun <T> dijkstra(graph: Graph<T>, start: T): Map<T, T?> {
-    val S: MutableSet<T> = mutableSetOf() // a subset of vertices, for which we know the true distance
+  fun <T> dijkstra(graph: Graph<T>, start: T): Map<T, Int> {
+    class VertexDistancePairComparator<T> : Comparator<Pair<T, Int>> {
+      override fun compare(o1: Pair<T, Int>, o2: Pair<T, Int>): Int {
+        return o1.second.compareTo(o2.second)
+      }
+    }
 
-    val delta = graph.vertices.map { it to Int.MAX_VALUE }.toMap().toMutableMap()
-    delta[start] = 0
+    val priorityQueue = PriorityQueue<Pair<T, Int>>(VertexDistancePairComparator())
 
-    val previous: MutableMap<T, T?> = graph.vertices.map { it to null }.toMap().toMutableMap()
+    val visited = mutableSetOf<T>()
+    val totalRiskLevel = mutableMapOf<T, Int>()
 
-    while (S != graph.vertices) {
-      val v: T = delta.filter { !S.contains(it.key) }.minByOrNull { it.value }!!.key
+    totalRiskLevel[start] = 0
+    priorityQueue.add(Pair(start, 0))
 
-      graph.edges.getValue(v).minus(S).forEach { neighbor ->
-        val deltaValue = delta.getOrDefault(v, null)
-        val weightValue = graph.weights.getOrDefault(Pair(v, neighbor), null)
-        if (deltaValue == null || weightValue == null) return@forEach
+    while (priorityQueue.isNotEmpty()){
+      val point = priorityQueue.remove()
+      val vertex = point.first
+      val distance = point.second
 
-        val newPath = deltaValue + weightValue
+      visited.add(vertex)
+      if (totalRiskLevel.getOrDefault(vertex, Int.MAX_VALUE) < distance) continue
 
-        if (newPath < delta.getValue(neighbor)) {
-          delta[neighbor] = newPath
-          previous[neighbor] = v
+      graph.edges.getValue(vertex).minus(visited).forEach { neighbor ->
+        val newRiskLevel = totalRiskLevel.getOrDefault(vertex, Int.MAX_VALUE) + graph.weights.getOrDefault(Pair(vertex, neighbor), null)!!
+        if (newRiskLevel < totalRiskLevel.getOrDefault(neighbor, Int.MAX_VALUE)){
+          totalRiskLevel[neighbor] = newRiskLevel
+          priorityQueue.add(Pair(neighbor, newRiskLevel))
         }
       }
-
-      S.add(v)
     }
 
-    return previous.toMap()
-  }
+    println(totalRiskLevel.count())
 
-  fun <T> shortestPath(shortestPathTree: Map<T, T?>, start: T, end: T): List<T> {
-    fun pathTo(start: T, end: T): List<T> {
-      if (shortestPathTree[end] == null) return listOf(end)
-      return listOf(pathTo(start, shortestPathTree[end]!!), listOf(end)).flatten()
-    }
-
-    return pathTo(start, end)
+    return totalRiskLevel
   }
 
   class Table(cols: Int, rows: Int, numbers: Array<Int>) {
@@ -135,11 +133,20 @@ fun main() {
     val numbers = mutableListOf<Int>()
     var cols = -1
     var rows = 0
-
-    for (line in readInput("Day15")) {
-      cols = line.length
-      rows++
-      numbers.addAll(line.split("").filter { it.isNotEmpty() }.map { it.toInt() })
+    for (i in 0..4) {
+      for (sline in readInput("Day15")) {
+        val ints = sline.split("").filter { it.isNotEmpty() }.map { it.toInt() }
+        val lineNums = mutableListOf<Int>()
+        for (j in 0..4) {
+          lineNums.addAll(ints.map {
+            val newNumber = it + i + j
+            if (newNumber > 9) newNumber - 9 else newNumber
+          })
+        }
+        cols = lineNums.count()
+        rows++
+        numbers.addAll(lineNums)
+      }
     }
 
     return Table(cols, rows, numbers.toTypedArray())
@@ -147,23 +154,11 @@ fun main() {
 
   fun part1() {
     val t = readTable()
-
     val g = t.toGraph()
 
     val start = "V0"
-    val shortestPathTree = dijkstra(g, start)
-    val path = shortestPath(shortestPathTree, start, "V${t.numbers.count() - 1}")
-
-    println(path)
-    var pathSum = 0
-    path.zipWithNext().forEach {
-      var weight = g.weights[Pair(it.first, it.second)]
-      println("$it: $weight")
-      pathSum += weight!!
-    }
-
-    t.printMe(path)
-    println(pathSum)
+    val end = "V${t.numbers.count() - 1}"
+    println(dijkstra(g, start).getOrDefault(end, null))
   }
 
   fun part2() {
