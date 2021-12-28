@@ -14,10 +14,25 @@ fun main() {
       return (typeId == 4)
     }
 
+    fun compute() : Long {
+      if (isLiteral()) return literal
+
+      return when (typeId) {
+        0 -> packets.sumOf { it.compute() }
+        1 -> packets.fold(1) { acc, packet ->  acc * packet.compute() }
+        2 -> packets.minOf { it.compute() }
+        3 -> packets.maxOf { it.compute() }
+        5 -> if (packets.first()!!.compute() > packets.last()!!.compute()) 1 else 0
+        6 -> if (packets.first()!!.compute() < packets.last()!!.compute()) 1 else 0
+        7 -> if (packets.first()!!.compute() == packets.last()!!.compute()) 1 else 0
+        else -> throw Exception("Bad type! ($typeId)")
+      }
+    }
+
     override fun toString() : String {
       if (isLiteral()) return "PACKET (v. $version): Literal with value:$literal"
 
-      return "PACKET (v. $version): Operator with ${packets.count()} sub-packets: (${packets}"
+      return "PACKET (v. $version, t. $typeId): Operator with ${packets.count()} sub-packets: (${packets}"
     }
 
     fun totalVersions() : Int {
@@ -113,8 +128,19 @@ fun main() {
   }
 
   fun part2() {
+    var input = readInput("Day16").first()
+    var binary = hexToBin(input)
+    var packets = mutableListOf<Packet>()
+
+    while (binary.isNotEmpty() && binary.contains("1")) {
+      var (packet, rest) = readPacket(binary)
+      packets.add(packet)
+      binary = rest
+    }
+
+    println(packets.map { it.compute() })
   }
 
-  part1()
+//  part1()
   part2()
 }
