@@ -3,7 +3,7 @@ import java.util.*
 // https://adventofcode.com/2021/day/18
 
 fun main() {
-  class SNum{
+  class SNum {
     var left : SNum? = null
     var right : SNum? = null
     var parent : SNum? = null
@@ -21,38 +21,6 @@ fun main() {
       return "[${left},${right}]"
     }
   }
-//
-//  fun parseNum(string: String, startAt: Int = 0) : Pair<SNum, Int> {
-//    val node = SNum()
-//
-//    println(string)
-//
-//
-//    for (index in startAt until string.length) {
-//      val c = string[index]
-//      if (c == '[') {
-//        val child = parseNum(string.substring(index + 1, string.length))
-//        child.parent = node
-//        node.left = child
-//      }
-//
-//      if (c == ',') {
-//        val child = parseNum(string.substring(index + 1, string.length))
-//        child.parent = node
-//        node.right = child
-//        return node
-//      }
-//
-//      val digit = c.digitToIntOrNull()
-//      if (digit != null) {
-//        val leaf = SNum()
-//        leaf.value = digit
-//        return leaf
-//      }
-//    }
-//
-//    return node
-//  }
 
   fun parseNum(string: String) : SNum {
     val stack = Stack<SNum>()
@@ -81,6 +49,7 @@ fun main() {
         val leaf = SNum()
         leaf.value = digit
         val currentNum = stack.peek()
+        leaf.parent = currentNum
         if (currentNum.left == null) {
           currentNum.left = leaf
         } else {
