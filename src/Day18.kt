@@ -13,6 +13,17 @@ fun main() {
       return (value != null)
     }
 
+    fun add(b: SNum) : SNum {
+      val n = SNum()
+      n.left = this
+      n.right = b
+
+      this.parent = n
+      b.parent = n
+
+      return n
+    }
+
     override fun toString(): String {
       if (isLeaf()) {
         return value.toString()
@@ -68,9 +79,9 @@ fun main() {
   }
 
   fun part1() {
-    val string = "[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]"
-    val s = parseNum(string)
-    println(s.toString() == string)
+    val stringA = "[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]"
+    val stringB = "[[[[4,3],4],4],[7,[[8,4],9]]]"
+    val s = parseNum(stringA).add(parseNum(stringB))
     println(s)
   }
 
