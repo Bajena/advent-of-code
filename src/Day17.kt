@@ -42,7 +42,7 @@ fun main() {
     if (currentX !in minX..maxX) return -1000
     var maxHeight = -1000
 
-    for (vy in -1000..1000) {
+    for (vy in minY..-minY) {
       val maxStep = computeY(vy, currentX, currentVx, steps, minX, maxX, minY, maxY)
 
       if (maxStep > 0) {
@@ -71,7 +71,7 @@ fun main() {
     if (currentX !in minX..maxX) return listOf()
 
     var result = mutableListOf<Pair<Int, Int>>()
-    for (vy in -1000..1000) {
+    for (vy in minY..-minY) {
       val maxStep = computeY(vy, currentX, currentVx, steps, minX, maxX, minY, maxY)
 
       if (maxStep > 0) {
@@ -84,30 +84,6 @@ fun main() {
   }
 
   fun part1() {
-    var minX = 20
-    var maxX = 30
-    var minY = -10
-    var maxY = -5
-
-    var minVx = 6 // https://www.wolframalpha.com/input/?i=x2%2Bx-40%3D0
-
-//    var minX = 25
-//    var maxX = 67
-//    var minY = -260
-//    var maxY = -200
-//
-//    var minVx = 7 // https://www.wolframalpha.com/input/?i=x2%2Bx-50%3D0
-
-    var maxHeight = -1000
-    for (vx in minVx..maxX) {
-      val height = calcStepOfHit(vx, minX, maxX, minY, maxY)
-      if (height > maxHeight) maxHeight = height
-    }
-
-    println(maxHeight)
-  }
-
-  fun part2() {
 //    var minX = 20
 //    var maxX = 30
 //    var minY = -10
@@ -121,6 +97,30 @@ fun main() {
     var maxY = -200
 
     var minVx = 7 // https://www.wolframalpha.com/input/?i=x2%2Bx-50%3D0
+
+    var maxHeight = -1000
+    for (vx in minVx..maxX) {
+      val height = calcStepOfHit(vx, minX, maxX, minY, maxY)
+      if (height > maxHeight) maxHeight = height
+    }
+
+    println(maxHeight)
+  }
+
+  fun part2() {
+    var minX = 20
+    var maxX = 30
+    var minY = -10
+    var maxY = -5
+
+    var minVx = 6 // https://www.wolframalpha.com/input/?i=x2%2Bx-40%3D0
+
+//    var minX = 25
+//    var maxX = 67
+//    var minY = -260
+//    var maxY = -200
+//
+//    var minVx = 7 // https://www.wolframalpha.com/input/?i=x2%2Bx-50%3D0
 
     var result = mutableListOf<Pair<Int, Int>>()
     for (vx in minVx..maxX) {
