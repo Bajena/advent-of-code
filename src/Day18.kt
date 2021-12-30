@@ -1,6 +1,11 @@
 import java.util.*
+import kotlin.math.ceil
 
 // https://adventofcode.com/2021/day/18
+
+enum class SNumOperation {
+  EXPLODE, SPLIT
+}
 
 fun main() {
   class SNum {
@@ -22,6 +27,69 @@ fun main() {
       b.parent = n
 
       return n
+    }
+
+    fun magnitude() : Long {
+      if (isLeaf()) {
+        return value!!.toLong()
+      }
+
+      return 3 * this.left!!.magnitude() + 2 * this.right!!.magnitude()
+    }
+
+    fun explode() {
+      val closestLeft = findClosestDigit(true)
+      val closestRight = findClosestDigit(false)
+      println("Closest left: $closestLeft, closest right: $closestRight")
+
+      if (closestLeft != null) {
+        closestLeft.value = closestLeft.value!! + this.left!!.value!!
+      }
+
+      if (closestRight != null) {
+        closestRight.value = closestRight.value!! + this.right!!.value!!
+      }
+
+      this.left = null
+      this.right = null
+      this.value = 0
+    }
+
+    fun findClosestDigit(left: Boolean) : SNum? {
+      var current = this.parent
+      var last = this
+
+      while (current != null && (if (left) current.left == last else current.right == last)) {
+        last = current
+        current = current.parent
+      }
+
+      if (current == null) {
+        return null
+      }
+
+      current = if (left) current.left else current.right
+
+      while (!current!!.isLeaf()) {
+        current = if (left) current.right else current.left
+      }
+
+      return current
+    }
+
+    fun split() : SNum {
+      val left = SNum()
+      val right = SNum()
+
+      left.value = this.value!! / 2
+      left.parent = this
+      right.value = ceil(this.value!! / 2.0).toInt()
+      right.parent = this
+      this.value = null
+      this.left = left
+      this.right = right
+
+      return this
     }
 
     override fun toString(): String {
@@ -75,14 +143,92 @@ fun main() {
       }
     }
 
+//    println("Parsed $string -> $root")
     return root!!
   }
 
+  fun findNodeToExplode(node: SNum, level: Int = 0) : SNum? {
+    if (node.isLeaf()) {
+      return null
+    }
+
+    if (node.left != null && node.left!!.isLeaf() && node.right != null && node.right!!.isLeaf() && level >= 4) {
+      return node
+    }
+
+    val leftResult = findNodeToExplode(node.left!!, level + 1)
+    if (leftResult != null) {
+      return leftResult
+    }
+
+    return findNodeToExplode(node.right!!, level + 1)
+  }
+
+  fun findNodeToSplit(node: SNum) : SNum? {
+    if (node.isLeaf()) {
+      return if (node.value!! > 9) {
+       node
+      } else {
+        null
+      }
+    }
+
+    val leftResult = findNodeToSplit(node.left!!)
+    if (leftResult != null) {
+      return leftResult
+    }
+
+    return findNodeToSplit(node.right!!)
+  }
+
+  fun reduce(s: SNum) {
+    while (true) {
+      var nte = findNodeToExplode(s)
+      if (nte != null) {
+        println("Exploding $nte in $s")
+        nte.explode()
+        continue
+      }
+      var nts = findNodeToSplit(s)
+      if (nts != null) {
+        println("Splitted ${nts} into ${nts.split()}")
+        continue
+      }
+
+      break
+    }
+  }
+
+  fun readNumber() : SNum {
+    var current:SNum? = null
+    for (string in readInput("Day18")) {
+      if (current == null) {
+        current = parseNum(string)
+        reduce(current!!)
+        continue
+      }
+
+      var currentString = current.toString()
+      var parsed = parseNum(string)
+      current = current!!.add(parseNum(string))
+      reduce(current!!)
+
+      println("  $currentString")
+      println("+ $parsed")
+      println("= $current")
+      println()
+    }
+
+    return current!!
+  }
+
   fun part1() {
-    val stringA = "[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]"
-    val stringB = "[[[[4,3],4],4],[7,[[8,4],9]]]"
-    val s = parseNum(stringA).add(parseNum(stringB))
+//    val s = parseNum("[[[[4,3],4],4],[7,[[8,4],9]]]").add(parseNum("[1,1]"))
+    val s = readNumber()
+
+
     println(s)
+    println(s.magnitude())
   }
 
   fun part2() {
