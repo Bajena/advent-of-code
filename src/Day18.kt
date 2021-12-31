@@ -20,11 +20,12 @@ fun main() {
 
     fun add(b: SNum) : SNum {
       val n = SNum()
+
       n.left = this
       n.right = b
 
-      this.parent = n
-      b.parent = n
+      n.left!!.parent = n
+      n.right!!.parent = n
 
       return n
     }
@@ -181,7 +182,7 @@ fun main() {
     return findNodeToSplit(node.right!!)
   }
 
-  fun reduce(s: SNum) {
+  fun reduce(s: SNum) :SNum {
     while (true) {
       var nte = findNodeToExplode(s)
       if (nte != null) {
@@ -197,6 +198,8 @@ fun main() {
 
       break
     }
+
+    return s
   }
 
   fun readNumber() : SNum {
@@ -211,15 +214,21 @@ fun main() {
       var currentString = current.toString()
       var parsed = parseNum(string)
       current = current!!.add(parseNum(string))
+      var sumBeforeReduce = current.toString()
       reduce(current!!)
 
       println("  $currentString")
       println("+ $parsed")
+      println("= $sumBeforeReduce")
       println("= $current")
       println()
     }
 
     return current!!
+  }
+
+  fun readNumbers() : List<SNum> {
+    return readInput("Day18").map { parseNum(it) }
   }
 
   fun part1() {
@@ -232,8 +241,25 @@ fun main() {
   }
 
   fun part2() {
+    val s = readNumbers()
+    var max : Long = 0
+    for (n in s) {
+      for (n2 in s) {
+        if (n == n2) continue
+
+        val sumA = reduce(parseNum(n.toString()).add(parseNum(n2.toString()))).magnitude()
+        println("Magnitude of $n + $n2 is $sumA")
+        val sumB = reduce(parseNum(n2.toString()).add(parseNum(n.toString()))).magnitude()
+        println("Magnitude of $n2 + $n is $sumB")
+
+        if (sumA > max) max = sumA
+        if (sumB > max) max = sumB
+      }
+    }
+
+    println(max)
   }
 
-  part1()
+//  part1()
   part2()
 }
