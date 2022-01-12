@@ -147,15 +147,15 @@ fun main() {
 
   fun part2() {
     var image = readImage()
-    image.printMe()
+//    image.printMe()
 
     for (step in 0 until 50) {
       println("")
       print("Step $step:")
-      image = image.grow(5, if (image.mask.first() == '.' || step % 2 == 0) 0 else 1)
-      image.printMe()
+      image = image.grow(2, if (image.mask.first() == '.' || step % 2 == 0) 0 else 1)
+//      image.printMe()
       image = image.applyMask()
-      image.printMe()
+//      image.printMe()
     }
 
     println(image.numbers.count { it == 1 })
